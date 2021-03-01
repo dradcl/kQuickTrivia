@@ -14,7 +14,6 @@ namespace kQuickTrivia
 
         private string[] answers;
         private int currentAnswerIndex = 0;
-        private List<Question> createdEntries = new List<Question>();
 
         // Used to initialize the options property of the JSON object, made specifically to match Kleiner trivia format.
         private string[] createOptionsWithAnswers()
