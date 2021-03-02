@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace kQuickTrivia
@@ -12,11 +11,12 @@ namespace kQuickTrivia
         // Answer choices are saved as emojis rather than numbers so that it is easy to send as an embed and so the ReactionCollector recognizes it
         private string[] answerOptions = { "1⃣", "2⃣", "3⃣", "4⃣" };
 
+        private List<Question> questionEntries = new List<Question>();
         private string[] answers;
         private int currentAnswerIndex = 0;
 
         // Used to initialize the options property of the JSON object, made specifically to match Kleiner trivia format.
-        private string[] createOptionsWithAnswers()
+        private string[] CreateOptionsWithAnswers()
         {
             string[] result = new string[4];
             answers = new string[4] { firstAnsListBox.Text, secondAnsListBox.Text, thirdAnsListBox.Text, fourthAnsListBox.Text };
@@ -34,22 +34,26 @@ namespace kQuickTrivia
         {
             Question currentQuestion = new Question
             {
-                question = questionTextBox.Text,
-                options = createOptionsWithAnswers(),
-                answer = answerOptions[currentAnswerIndex]
+                Text = questionTextBox.Text,
+                Options = CreateOptionsWithAnswers(),
+                Answer = answerOptions[currentAnswerIndex]
             };
 
             // A check to make sure the answerOptions index stays in bounds, we can discard the result.
             _ = currentAnswerIndex >= 3 ? currentAnswerIndex = 0 : currentAnswerIndex++;
 
             createdListBox.Items.Add(JsonConvert.SerializeObject(currentQuestion));
+            questionEntries.Add(currentQuestion);
         }
 
         // Writing the Question objects to a JSON file.
         private void createBtn_Click(object sender, EventArgs e)
         {
-            // Cleanest way I found since I needed the commas and I'm bad, https://stackoverflow.com/questions/20595279/c-sharp-save-all-items-in-a-listbox-to-text-file/20595349
-            File.WriteAllLines("trivia.json", createdListBox.Items.Cast<string>().ToArray().Select(x => string.Format("{0},", x)));
+            using (TextWriter tw = new StreamWriter("trivia.json"))
+            {
+                foreach (Question entry in questionEntries)
+                    tw.WriteLine($"{JsonConvert.SerializeObject(entry)},");
+            }
         }
 
         public Form1()
